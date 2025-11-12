@@ -93,7 +93,7 @@
                 "tags": [
                     "Comptes"
                 ],
-                "summary": "Créer un nouveau compte client",
+                "summary": "Créer un nouveau client et son compte",
                 "operationId": "5d42e160321a721254357472cf5e1129",
                 "requestBody": {
                     "required": true,
@@ -101,27 +101,44 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "client_id",
-                                    "type_compte",
+                                    "nom",
+                                    "prenom",
+                                    "date_naissance",
+                                    "telephone",
+                                    "cni",
                                     "solde_initial"
                                 ],
                                 "properties": {
-                                    "client_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "type_compte": {
+                                    "nom": {
                                         "type": "string",
-                                        "enum": [
-                                            "courant",
-                                            "epargne"
-                                        ],
-                                        "example": "courant"
+                                        "example": "Doe"
+                                    },
+                                    "prenom": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "date_naissance": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-01-01"
+                                    },
+                                    "adresse": {
+                                        "type": "string",
+                                        "example": "123 Rue Exemple",
+                                        "nullable": true
+                                    },
+                                    "telephone": {
+                                        "type": "string",
+                                        "example": "+221771234567"
+                                    },
+                                    "cni": {
+                                        "type": "string",
+                                        "example": "1234567890123"
                                     },
                                     "solde_initial": {
                                         "type": "number",
                                         "format": "float",
-                                        "example": 0
+                                        "example": 10000
                                     }
                                 },
                                 "type": "object"
@@ -136,12 +153,13 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Compte créé avec succès"
-                                        },
-                                        "compte": {
-                                            "$ref": "#/components/schemas/Compte"
+                                            "example": "Votre compte a été créé avec succès"
                                         }
                                     },
                                     "type": "object"
@@ -150,10 +168,53 @@
                         }
                     },
                     "400": {
-                        "description": "Données invalides"
+                        "description": "Données invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Données invalides"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
-                    "403": {
-                        "description": "Non autorisé"
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur lors de la création du compte"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -177,14 +238,27 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "solde": {
-                                            "type": "number",
-                                            "format": "float",
-                                            "example": 50000
+                                        "data": {
+                                            "properties": {
+                                                "solde": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1000.5
+                                                },
+                                                "devise": {
+                                                    "type": "string",
+                                                    "example": "XOF"
+                                                }
+                                            },
+                                            "type": "object"
                                         },
-                                        "devise": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
                                             "type": "string",
-                                            "example": "XOF"
+                                            "example": "Solde récupéré avec succès"
                                         }
                                     },
                                     "type": "object"
@@ -192,8 +266,25 @@
                             }
                         }
                     },
-                    "404": {
-                        "description": "Compte non trouvé"
+                    "401": {
+                        "description": "Non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -424,36 +515,46 @@
     },
     "components": {
         "schemas": {
-            "Error": {
+            "ClientInput": {
                 "required": [
-                    "success",
-                    "message"
+                    "nom",
+                    "prenom",
+                    "date_naissance",
+                    "cni",
+                    "telephone",
+                    "solde_initial"
                 ],
                 "properties": {
-                    "success": {
-                        "type": "boolean",
-                        "example": false
-                    },
-                    "message": {
+                    "nom": {
                         "type": "string",
-                        "example": "Error message"
-                    }
-                },
-                "type": "object"
-            },
-            "Success": {
-                "required": [
-                    "success",
-                    "message"
-                ],
-                "properties": {
-                    "success": {
-                        "type": "boolean",
-                        "example": true
+                        "example": "Doe"
                     },
-                    "message": {
+                    "prenom": {
                         "type": "string",
-                        "example": "Success message"
+                        "example": "John"
+                    },
+                    "date_naissance": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-01-01"
+                    },
+                    "adresse": {
+                        "type": "string",
+                        "example": "123 Rue Exemple",
+                        "nullable": true
+                    },
+                    "telephone": {
+                        "type": "string",
+                        "example": "+221771234567"
+                    },
+                    "cni": {
+                        "type": "string",
+                        "example": "1234567890123"
+                    },
+                    "solde_initial": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 10000
                     }
                 },
                 "type": "object"
