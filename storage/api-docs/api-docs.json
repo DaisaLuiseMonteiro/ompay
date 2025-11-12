@@ -28,7 +28,7 @@
                 "tags": [
                     "Authentification"
                 ],
-                "summary": "Connexion d'un utilisateur",
+                "summary": "Vérification des informations de connexion",
                 "operationId": "a7997e7c1e3bfed64d4e56de82415931",
                 "requestBody": {
                     "required": true,
@@ -37,17 +37,17 @@
                             "schema": {
                                 "required": [
                                     "telephone",
-                                    "code_pin"
+                                    "email"
                                 ],
                                 "properties": {
                                     "telephone": {
                                         "type": "string",
                                         "example": "770000000"
                                     },
-                                    "code_pin": {
+                                    "email": {
                                         "type": "string",
-                                        "format": "password",
-                                        "example": "123456"
+                                        "format": "email",
+                                        "example": "client@example.com"
                                     }
                                 },
                                 "type": "object"
@@ -57,21 +57,18 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Connexion réussie",
+                        "description": "Succès",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "access_token": {
-                                            "type": "string"
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
-                                        "token_type": {
+                                        "message": {
                                             "type": "string",
-                                            "example": "bearer"
-                                        },
-                                        "expires_in": {
-                                            "type": "integer",
-                                            "example": 3600
+                                            "example": "Un message vous a été envoyé"
                                         }
                                     },
                                     "type": "object"
@@ -80,10 +77,47 @@
                         }
                     },
                     "401": {
-                        "description": "Identifiants invalides"
+                        "description": "Données invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Données invalides"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Erreur de validation"
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur de validation"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -650,18 +684,10 @@
                         "description": "Numéro de compte unique",
                         "type": "string"
                     },
-                    "solde": {
-                        "description": "Solde du compte",
+                    "solde_initial": {
+                        "description": "Solde initial du compte",
                         "type": "number",
                         "format": "float"
-                    },
-                    "type_compte": {
-                        "description": "Type de compte",
-                        "type": "string",
-                        "enum": [
-                            "courant",
-                            "epargne"
-                        ]
                     },
                     "devise": {
                         "description": "Devise du compte",

@@ -38,19 +38,17 @@ class Client extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'id',
-        'user_id',
-        'prenom',
-        'nom',
-        'adresse',
-        'ville',
-        'pays',
-        'telephone',
-        'piece_identite',
-        'type_piece',
-        'date_emission',
-        'date_expiration',
-        'statut'
+       'id',
+    'prenom',
+    'nom',
+    'date_naissance',
+    'adresse',
+    'telephone',
+    'cni',
+    'code_secret',
+    'statut',
+    'sexe',
+    'email'
     ];
 
     protected $casts = [

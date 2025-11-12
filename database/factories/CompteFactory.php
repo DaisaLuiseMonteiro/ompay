@@ -14,12 +14,14 @@ class CompteFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => (string) \Illuminate\Support\Str::uuid(),
             'client_id' => Client::factory(),
             'numero_compte' => 'CMPT' . now()->format('Ymd') . strtoupper(Str::random(6)),
             'solde_initial' => $this->faker->randomFloat(2, 0, 1000000),
-            'devise' => $this->faker->randomElement(['XOF', 'EUR', 'USD']),
-            'statut' => $this->faker->randomElement(['actif', 'inactif', 'bloque']),
-            'date_ouverture' => $this->faker->dateTimeBetween('-5 years', 'now')->format('Y-m-d'),
+            'devise' => 'XOF',
+            'statut' => 'actif',
+            'date_ouverture' => now(),
+            'code_secret' => (string) rand(1000, 9999),
         ];
     }
 

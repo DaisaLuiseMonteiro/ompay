@@ -71,6 +71,11 @@ class MarchandSeeder extends Seeder
             ]
         ];
 
-        DB::table('marchands')->insert($marchands);
+        foreach ($marchands as $marchand) {
+            DB::table('marchands')->updateOrInsert(
+                ['code_marchand' => $marchand['code_marchand']],
+                $marchand
+            );
+        }
     }
 }

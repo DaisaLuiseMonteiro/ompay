@@ -59,7 +59,7 @@ class SampleDataSeeder extends Seeder
                 'reference' => 'VIR' . time() . $i,
                 'type_transaction' => 'virement',
                 'montant' => $montant,
-                'frais' => 25.00, // Frais de virement
+                'frais' => 25.00, 
                 'devise' => 'XOF',
                 'description' => 'Virement vers ' . $destinataire->client->nom,
                 'compte_id' => $expediteur->id,

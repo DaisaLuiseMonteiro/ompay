@@ -19,8 +19,9 @@ class DatabaseSeeder extends Seeder
             ClientSeeder::class,        // Puis les clients
             MarchandSeeder::class,      // Puis les marchands
             CompteSeeder::class,        // Puis les comptes
-            TransactionSeeder::class,   // Enfin les transactions
-            SampleDataSeeder::class,    // Enfin les données de test
+            TransactionSeeder::class,   // Puis les transactions
+            SampleDataSeeder::class,    // Puis les données de test
+            UpdateComptesWithCodeSecret::class, // Mettre à jour les codes secrets
         ]);
     }
 }

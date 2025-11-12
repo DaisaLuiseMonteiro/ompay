@@ -17,55 +17,74 @@ class AuthController extends BaseController
     /**
      * @OA\Post(
      *     path="/api/v1/auth/login",
-     *     summary="Connexion d'un utilisateur",
+     *     summary="Vérification des informations de connexion",
      *     tags={"Authentification"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"telephone", "code_pin"},
+     *             required={"telephone", "email"},
      *             @OA\Property(property="telephone", type="string", example="770000000"),
-     *             @OA\Property(property="code_pin", type="string", format="password", example="123456")
+     *             @OA\Property(property="email", type="string", format="email", example="client@example.com")
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Connexion réussie",
+     *         description="Succès",
      *         @OA\JsonContent(
-     *             @OA\Property(property="access_token", type="string"),
-     *             @OA\Property(property="token_type", type="string", example="bearer"),
-     *             @OA\Property(property="expires_in", type="integer", example=3600)
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Un message vous a été envoyé")
      *         )
      *     ),
-     *     @OA\Response(response=401, description="Identifiants invalides"),
-     *     @OA\Response(response=422, description="Erreur de validation")
+     *     @OA\Response(
+     *         response=401,
+     *         description="Données invalides",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Données invalides")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Erreur de validation"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
      * )
      */
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'telephone' => 'required|string',
-            'code_pin' => 'required|string|digits:6',
+            'email' => 'required|email',
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
-        $credentials = $request->only(['telephone', 'code_pin']);
-        
-        if (!$token = Auth::guard('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Identifiants invalides'], 401);
+        // Vérifier si un client avec ce téléphone et cet email existe
+        $client = Client::where('telephone', $request->telephone)
+                      ->where('email', $request->email)
+                      ->first();
+
+        if (!$client) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Données invalides'
+            ], 401);
         }
 
-        return $this->respondWithToken($token);
-    }
-
-    protected function respondWithToken($token)
-    {
+        // Si l'utilisateur existe, on renvoie un message de succès
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60
+            'success' => true,
+            'message' => 'Un message vous a été envoyé'
         ]);
     }
 }

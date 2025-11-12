@@ -65,14 +65,28 @@ class CompteController extends Controller
      */
     public function creerCompte(Request $request)
     {
+        // Log des données reçues
+        Log::info('Données reçues : ' . json_encode($request->all()));
+        Log::info('Headers : ' . json_encode($request->headers->all()));
+        Log::info('Content-Type : ' . $request->header('Content-Type'));
+        Log::info('Raw input: ' . file_get_contents('php://input'));
+
         $validator = Validator::make($request->all(), [
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'date_naissance' => 'required|date|before:today',
             'adresse' => 'nullable|string|max:255',
             'telephone' => 'required|string|unique:clients,telephone',
+            'email' => 'required|email|unique:clients,email',
             'cni' => 'required|string|unique:clients,cni',
+            'sexe' => 'required|in:M,F',
             'solde_initial' => 'required|numeric|min:0',
+        ], [
+            'email.required' => 'L\'adresse email est obligatoire',
+            'email.email' => 'L\'adresse email n\'est pas valide',
+            'email.unique' => 'Cette adresse email est déjà utilisée',
+            'sexe.required' => 'Le sexe est obligatoire (M ou F)',
+            'sexe.in' => 'Le sexe doit être M (Masculin) ou F (Féminin)',
         ]);
 
         if ($validator->fails()) {
@@ -92,11 +106,12 @@ class CompteController extends Controller
                 'id' => (string) Str::uuid(),
                 'nom' => $request->nom,
                 'prenom' => $request->prenom,
-                'date_naissance' => $request->date_naissance,
+                'date_naissance' => Carbon::createFromFormat('Y-m-d', $request->date_naissance)->format('Y-m-d'),
                 'adresse' => $request->adresse,
                 'telephone' => $request->telephone,
+                'email' => $request->email,
                 'cni' => $request->cni,
-                'code_secret' => $codeSecret,
+                'sexe' => $request->sexe,
                 'statut' => 'actif',
             ]);
             $client->save();
@@ -105,8 +120,8 @@ class CompteController extends Controller
                 'id' => (string) Str::uuid(),
                 'client_id' => $client->id,
                 'numero_compte' => $this->genererNumeroCompte(),
+                'code_secret' => $codeSecret,
                 'solde_initial' => $request->solde_initial,
-                'solde' => $request->solde_initial,
                 'devise' => 'XOF',
                 'statut' => 'actif',
                 'date_ouverture' => Carbon::now(),
@@ -117,7 +132,23 @@ class CompteController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Votre compte a été créé avec succès'
+                'message' => 'Votre compte a été créé avec succès',
+                'data' => [
+                    'client' => [
+                        'nom' => $client->nom,
+                        'prenom' => $client->prenom,
+                        'email' => $client->email,
+                        'telephone' => $client->telephone,
+                        'cni' => $client->cni,
+                        'sexe' => $client->sexe
+                    ],
+                    'compte' => [
+                        'numero_compte' => $compte->numero_compte,
+                        'code_secret' => $compte->code_secret,
+                        'solde_initial' => $compte->solde_initial,
+                        'devise' => $compte->devise
+                    ]
+                ]
             ], 201);
 
         } catch (\Exception $e) {

@@ -31,8 +31,12 @@ Route::prefix('v1')->group(function () {
     });
 
     // Comptes
-    Route::prefix('comptes')->middleware('auth:api')->group(function () {
+    Route::prefix('comptes')->group(function () {
         Route::post('/creer', [CompteController::class, 'creerCompte']);
-        Route::get('/solde', [CompteController::class, 'consulterSolde']);
+        
+        // Routes protégées par authentification
+        Route::middleware('auth:api')->group(function () {
+            Route::get('/solde', [CompteController::class, 'consulterSolde']);
+        });
     });
 });
