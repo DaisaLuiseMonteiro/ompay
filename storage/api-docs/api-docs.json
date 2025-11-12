@@ -1,0 +1,726 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "OMPay API",
+        "description": "Documentation de l'API OMPay",
+        "termsOfService": "https://ompay.com/terms",
+        "contact": {
+            "email": "contact@ompay.com"
+        },
+        "license": {
+            "name": "Propriétaire",
+            "url": "https://ompay.com/license"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "API OMPay Server"
+        },
+        {
+            "url": "/api"
+        }
+    ],
+    "paths": {
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Connexion d'un utilisateur",
+                "operationId": "a7997e7c1e3bfed64d4e56de82415931",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "telephone",
+                                    "code_pin"
+                                ],
+                                "properties": {
+                                    "telephone": {
+                                        "type": "string",
+                                        "example": "770000000"
+                                    },
+                                    "code_pin": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 3600
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Identifiants invalides"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/api/v1/comptes/creer": {
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Créer un nouveau compte client",
+                "operationId": "5d42e160321a721254357472cf5e1129",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "client_id",
+                                    "type_compte",
+                                    "solde_initial"
+                                ],
+                                "properties": {
+                                    "client_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "type_compte": {
+                                        "type": "string",
+                                        "enum": [
+                                            "courant",
+                                            "epargne"
+                                        ],
+                                        "example": "courant"
+                                    },
+                                    "solde_initial": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Compte créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte créé avec succès"
+                                        },
+                                        "compte": {
+                                            "$ref": "#/components/schemas/Compte"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Données invalides"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/comptes/solde": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Consulter le solde du compte",
+                "operationId": "f5997e071d30f2fba6973b03ec2130f7",
+                "responses": {
+                    "200": {
+                        "description": "Solde du compte",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "solde": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 50000
+                                        },
+                                        "devise": {
+                                            "type": "string",
+                                            "example": "XOF"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transactions/transfert": {
+            "post": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Effectuer un transfert d'argent",
+                "operationId": "c4558256da50c0333276df4fedd342c9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "numero_destinataire",
+                                    "montant"
+                                ],
+                                "properties": {
+                                    "numero_destinataire": {
+                                        "type": "string",
+                                        "example": "770000001"
+                                    },
+                                    "montant": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 5000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transfert effectué avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transfert effectué avec succès"
+                                        },
+                                        "nouveau_solde": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 15000
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Données invalides"
+                    },
+                    "404": {
+                        "description": "Compte destinataire introuvable"
+                    },
+                    "403": {
+                        "description": "Solde insuffisant"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transactions/paiement": {
+            "post": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Effectuer un paiement à un marchand",
+                "operationId": "9ed0f10b40d7aafaa4aee9c30a57b355",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "marchand_id",
+                                    "montant"
+                                ],
+                                "properties": {
+                                    "marchand_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "montant": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Paiement effectué avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Paiement effectué avec succès"
+                                        },
+                                        "nouveau_solde": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 5000
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Données invalides"
+                    },
+                    "404": {
+                        "description": "Marchand introuvable"
+                    },
+                    "403": {
+                        "description": "Solde insuffisant"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transactions/historique": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Historique des transactions du client",
+                "operationId": "afa255c69b800a43bc297f37bfb7e366",
+                "responses": {
+                    "200": {
+                        "description": "Liste des transactions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Transaction"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transactions/{id}": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Afficher les détails d'une transaction par son ID",
+                "operationId": "c9e072c8c645241005e971a691e8338e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la transaction",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails de la transaction",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Transaction"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transaction non trouvée"
+                    },
+                    "401": {
+                        "description": "Non autorisé"
+                    },
+                    "403": {
+                        "description": "Accès non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Error": {
+                "required": [
+                    "success",
+                    "message"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Error message"
+                    }
+                },
+                "type": "object"
+            },
+            "Success": {
+                "required": [
+                    "success",
+                    "message"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Success message"
+                    }
+                },
+                "type": "object"
+            },
+            "Client": {
+                "title": "Client",
+                "description": "Modèle de client",
+                "properties": {
+                    "id": {
+                        "description": "ID unique du client",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "user_id": {
+                        "description": "ID de l'utilisateur associé",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "prenom": {
+                        "description": "Prénom du client",
+                        "type": "string"
+                    },
+                    "nom": {
+                        "description": "Nom du client",
+                        "type": "string"
+                    },
+                    "adresse": {
+                        "description": "Adresse du client",
+                        "type": "string"
+                    },
+                    "ville": {
+                        "description": "Ville du client",
+                        "type": "string"
+                    },
+                    "pays": {
+                        "description": "Pays du client",
+                        "type": "string"
+                    },
+                    "telephone": {
+                        "description": "Numéro de téléphone du client",
+                        "type": "string"
+                    },
+                    "piece_identite": {
+                        "description": "Numéro de pièce d'identité",
+                        "type": "string"
+                    },
+                    "type_piece": {
+                        "description": "Type de pièce d'identité (CNI, Passeport, etc.)",
+                        "type": "string"
+                    },
+                    "date_emission": {
+                        "description": "Date d'émission de la pièce d'identité",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "date_expiration": {
+                        "description": "Date d'expiration de la pièce d'identité",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "statut": {
+                        "description": "Statut du client (actif, inactif, suspendu)",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "description": "Date de création",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Date de dernière mise à jour",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Compte": {
+                "title": "Compte",
+                "description": "Modèle de compte utilisateur",
+                "properties": {
+                    "id": {
+                        "description": "ID unique du compte",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "client_id": {
+                        "description": "ID du client propriétaire",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "numero_compte": {
+                        "description": "Numéro de compte unique",
+                        "type": "string"
+                    },
+                    "solde": {
+                        "description": "Solde du compte",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "type_compte": {
+                        "description": "Type de compte",
+                        "type": "string",
+                        "enum": [
+                            "courant",
+                            "epargne"
+                        ]
+                    },
+                    "devise": {
+                        "description": "Devise du compte",
+                        "type": "string",
+                        "example": "XOF"
+                    },
+                    "statut": {
+                        "description": "Statut du compte",
+                        "type": "string",
+                        "enum": [
+                            "actif",
+                            "bloque",
+                            "ferme"
+                        ]
+                    },
+                    "date_ouverture": {
+                        "description": "Date d'ouverture du compte",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "code_secret": {
+                        "description": "Code secret du compte (hashé)",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "description": "Date de création",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Date de dernière mise à jour",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Transaction": {
+                "title": "Transaction",
+                "description": "Modèle de transaction",
+                "properties": {
+                    "id": {
+                        "description": "ID unique de la transaction",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "compte_id": {
+                        "description": "ID du compte émetteur",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "client_id": {
+                        "description": "ID du client effectuant la transaction",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "marchand_id": {
+                        "description": "ID du marchand (si applicable)",
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "type": {
+                        "description": "Type de transaction",
+                        "type": "string",
+                        "enum": [
+                            "depot",
+                            "retrait",
+                            "transfert",
+                            "paiement"
+                        ]
+                    },
+                    "montant": {
+                        "description": "Montant de la transaction",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "frais": {
+                        "description": "Frais de transaction",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "solde_avant": {
+                        "description": "Solde du compte avant la transaction",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "solde_apres": {
+                        "description": "Solde du compte après la transaction",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "devise": {
+                        "description": "Devise de la transaction",
+                        "type": "string"
+                    },
+                    "statut": {
+                        "description": "Statut de la transaction",
+                        "type": "string",
+                        "enum": [
+                            "en_attente",
+                            "terminee",
+                            "annulee",
+                            "echouee"
+                        ]
+                    },
+                    "reference": {
+                        "description": "Référence unique de la transaction",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "Description de la transaction",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "date_transaction": {
+                        "description": "Date et heure de la transaction",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "created_at": {
+                        "description": "Date de création",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Date de dernière mise à jour",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Entrez le token JWT: Bearer {token}",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "Transactions",
+            "description": "Opérations liées aux transactions"
+        },
+        {
+            "name": "Authentification",
+            "description": "Endpoints pour l'authentification"
+        },
+        {
+            "name": "Comptes",
+            "description": "Comptes"
+        }
+    ]
+}
