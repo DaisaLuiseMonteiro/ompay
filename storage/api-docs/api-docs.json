@@ -28,7 +28,7 @@
                 "tags": [
                     "Authentification"
                 ],
-                "summary": "Vérification des informations de connexion",
+                "summary": "Génère un code OTP",
                 "operationId": "a7997e7c1e3bfed64d4e56de82415931",
                 "requestBody": {
                     "required": true,
@@ -57,7 +57,71 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Succès",
+                        "description": "Code OTP généré et envoyé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "otp": {
+                                            "type": "string",
+                                            "example": "123456"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 300
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Identifiants invalides"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/verify-otp": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Vérifie le code OTP et authentifie l'utilisateur",
+                "operationId": "130b1763a31d0416a0aa3a799ee12827",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code"
+                                ],
+                                "properties": {
+                                    "code": {
+                                        "description": "Code OTP à 6 chiffres",
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentification réussie",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -68,7 +132,114 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Un message vous a été envoyé"
+                                            "example": "Connexion réussie"
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                        },
+                                        "refresh_token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 3600
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Code OTP invalide ou expiré"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/refresh-token": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Rafraîchir le token d'accès",
+                "description": "Rafraîchit le token d'accès en utilisant le refresh token (depuis les cookies ou le corps de la requête)",
+                "operationId": "e3df1165590ad802c45587492f194169",
+                "requestBody": {
+                    "description": "Refresh token (optionnel si fourni dans les cookies)",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "refresh_token": {
+                                        "description": "Le refresh token (si non fourni dans les cookies)",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token rafraîchi avec succès",
+                        "headers": {
+                            "Set-Cookie": {
+                                "description": "Contient le nouveau refresh token dans un cookie HTTP Only (si utilisé avec un navigateur)",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "refresh_token=abc123...; HttpOnly; Path=/; Max-Age=2592000; SameSite=lax"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "description": "Nouveau token d'accès",
+                                            "type": "string"
+                                        },
+                                        "refresh_token": {
+                                            "description": "Nouveau refresh token (à conserver pour les requêtes suivantes)",
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_in": {
+                                            "description": "Durée de validité en secondes",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Requête invalide",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -77,7 +248,7 @@
                         }
                     },
                     "401": {
-                        "description": "Données invalides",
+                        "description": "Non authentifié ou refresh token invalide",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -88,7 +259,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Données invalides"
+                                            "example": "Refresh token manquant ou invalide"
                                         }
                                     },
                                     "type": "object"
@@ -96,8 +267,8 @@
                             }
                         }
                     },
-                    "422": {
-                        "description": "Erreur de validation",
+                    "500": {
+                        "description": "Erreur serveur",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -108,10 +279,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Erreur de validation"
-                                        },
-                                        "errors": {
-                                            "type": "object"
+                                            "example": "Impossible de rafraîchir le token."
                                         }
                                     },
                                     "type": "object"
@@ -119,16 +287,78 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/api/v1/comptes/creer": {
+        "/api/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Déconnexion de l'utilisateur",
+                "operationId": "f6b8957b4c0b25636613a9f0512a8ba9",
+                "parameters": [
+                    {
+                        "name": "compte_id",
+                        "in": "query",
+                        "description": "ID du compte à déconnecter (format UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Déconnexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Déconnexion réussie"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID de compte manquant ou invalide"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "403": {
+                        "description": "Accès non autorisé à ce compte"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/comptes": {
             "post": {
                 "tags": [
                     "Comptes"
                 ],
                 "summary": "Créer un nouveau client et son compte",
-                "operationId": "5d42e160321a721254357472cf5e1129",
+                "operationId": "cbcca7c7331be9c2aa63764eef3dee50",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -140,7 +370,8 @@
                                     "date_naissance",
                                     "telephone",
                                     "cni",
-                                    "solde_initial"
+                                    "email",
+                                    "sexe"
                                 ],
                                 "properties": {
                                     "nom": {
@@ -156,23 +387,26 @@
                                         "format": "date",
                                         "example": "1990-01-01"
                                     },
-                                    "adresse": {
-                                        "type": "string",
-                                        "example": "123 Rue Exemple",
-                                        "nullable": true
-                                    },
                                     "telephone": {
                                         "type": "string",
                                         "example": "+221771234567"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john.doe@example.com"
                                     },
                                     "cni": {
                                         "type": "string",
                                         "example": "1234567890123"
                                     },
-                                    "solde_initial": {
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 10000
+                                    "sexe": {
+                                        "type": "string",
+                                        "enum": [
+                                            "M",
+                                            "F"
+                                        ],
+                                        "example": "M"
                                     }
                                 },
                                 "type": "object"
@@ -263,32 +497,53 @@
                 "tags": [
                     "Comptes"
                 ],
-                "summary": "Consulter le solde du compte",
+                "summary": "Consulter le solde d'un compte spécifique",
+                "description": "Permet à un utilisateur authentifié de consulter le solde d'un compte spécifique en fournissant son ID",
                 "operationId": "f5997e071d30f2fba6973b03ec2130f7",
+                "parameters": [
+                    {
+                        "name": "compte_id",
+                        "in": "query",
+                        "description": "ID du compte dont on veut consulter le solde",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Solde du compte",
+                        "description": "Solde du compte récupéré avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
                                         "data": {
                                             "properties": {
+                                                "numero_compte": {
+                                                    "type": "string",
+                                                    "example": "C20231112345"
+                                                },
                                                 "solde": {
                                                     "type": "number",
                                                     "format": "float",
-                                                    "example": 1000.5
+                                                    "example": 50000
                                                 },
                                                 "devise": {
                                                     "type": "string",
                                                     "example": "XOF"
+                                                },
+                                                "date_consultation": {
+                                                    "type": "string",
+                                                    "format": "date-time"
                                                 }
                                             },
                                             "type": "object"
-                                        },
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
                                         },
                                         "message": {
                                             "type": "string",
@@ -300,8 +555,8 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "Non authentifié",
+                    "400": {
+                        "description": "Données invalides",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -312,13 +567,119 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Non authentifié"
+                                            "example": "L'ID du compte est requis"
                                         }
                                     },
                                     "type": "object"
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "description": "Accès non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Accès non autorisé à ce compte"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/comptes/details": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Afficher les détails d'un compte",
+                "operationId": "fc743c3235b4d6ad10ea459afa282a41",
+                "parameters": [
+                    {
+                        "name": "numero_compte",
+                        "in": "query",
+                        "description": "Numéro de compte",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails du compte récupérés avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "compte": {
+                                                    "$ref": "#/components/schemas/Compte"
+                                                },
+                                                "transactions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Transaction"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Numéro de compte manquant ou invalide"
+                    },
+                    "401": {
+                        "description": "Non autorisé"
+                    },
+                    "404": {
+                        "description": "Compte non trouvé"
                     }
                 },
                 "security": [
@@ -341,15 +702,24 @@
                         "application/json": {
                             "schema": {
                                 "required": [
+                                    "compte_id",
                                     "numero_destinataire",
                                     "montant"
                                 ],
                                 "properties": {
+                                    "compte_id": {
+                                        "description": "ID du compte émetteur",
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                                    },
                                     "numero_destinataire": {
+                                        "description": "Numéro de téléphone du destinataire",
                                         "type": "string",
                                         "example": "770000001"
                                     },
                                     "montant": {
+                                        "description": "Montant à transférer",
                                         "type": "number",
                                         "format": "float",
                                         "example": 5000
@@ -367,6 +737,10 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "Transfert effectué avec succès"
@@ -375,6 +749,14 @@
                                             "type": "number",
                                             "format": "float",
                                             "example": 15000
+                                        },
+                                        "reference": {
+                                            "type": "string",
+                                            "example": "TRX123456789"
+                                        },
+                                        "date": {
+                                            "type": "string",
+                                            "example": "16/11/2025 11:30:45"
                                         }
                                     },
                                     "type": "object"
@@ -383,13 +765,67 @@
                         }
                     },
                     "400": {
-                        "description": "Données invalides"
-                    },
-                    "404": {
-                        "description": "Compte destinataire introuvable"
+                        "description": "Données invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur de validation"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "403": {
-                        "description": "Solde insuffisant"
+                        "description": "Accès refusé ou solde insuffisant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Solde insuffisant pour effectuer cette opération"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte introuvable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -405,6 +841,7 @@
                     "Transactions"
                 ],
                 "summary": "Effectuer un paiement à un marchand",
+                "description": "Effectue un paiement à un marchand en utilisant soit son code marchand, soit son numéro de téléphone",
                 "operationId": "9ed0f10b40d7aafaa4aee9c30a57b355",
                 "requestBody": {
                     "required": true,
@@ -412,15 +849,28 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "marchand_id",
+                                    "compte_id",
                                     "montant"
                                 ],
                                 "properties": {
-                                    "marchand_id": {
-                                        "type": "integer",
-                                        "example": 1
+                                    "compte_id": {
+                                        "description": "ID du compte émetteur",
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                                    },
+                                    "code_marchand": {
+                                        "description": "Code marchand (obligatoire si téléphone non fourni)",
+                                        "type": "string",
+                                        "example": "M123456"
+                                    },
+                                    "telephone": {
+                                        "description": "Numéro de téléphone du marchand (obligatoire si code_marchand non fourni)",
+                                        "type": "string",
+                                        "example": "775312571"
                                     },
                                     "montant": {
+                                        "description": "Montant du paiement",
                                         "type": "number",
                                         "format": "float",
                                         "example": 10000
@@ -438,6 +888,10 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "Paiement effectué avec succès"
@@ -446,6 +900,27 @@
                                             "type": "number",
                                             "format": "float",
                                             "example": 5000
+                                        },
+                                        "marchand": {
+                                            "properties": {
+                                                "nom": {
+                                                    "type": "string",
+                                                    "example": "Nom du Marchand"
+                                                },
+                                                "code_marchand": {
+                                                    "type": "string",
+                                                    "example": "M123456"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "reference": {
+                                            "type": "string",
+                                            "example": "PAY123456789"
+                                        },
+                                        "date": {
+                                            "type": "string",
+                                            "example": "16/11/2025 10:30:45"
                                         }
                                     },
                                     "type": "object"
@@ -454,13 +929,75 @@
                         }
                     },
                     "400": {
-                        "description": "Données invalides"
-                    },
-                    "404": {
-                        "description": "Marchand introuvable"
+                        "description": "Données invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur de validation"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "403": {
-                        "description": "Solde insuffisant"
+                        "description": "Accès refusé ou solde insuffisant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Solde insuffisant pour effectuer cette opération"
+                                        },
+                                        "solde_disponible": {
+                                            "type": "number",
+                                            "example": 5000
+                                        },
+                                        "montant_demande": {
+                                            "type": "number",
+                                            "example": 10000
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Marchand ou compte introuvable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Aucun marchand trouvé avec ce code/numéro"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -476,17 +1013,110 @@
                     "Transactions"
                 ],
                 "summary": "Historique des transactions du client",
+                "description": "Récupère l'historique des transactions pour un compte spécifique",
                 "operationId": "afa255c69b800a43bc297f37bfb7e366",
+                "parameters": [
+                    {
+                        "name": "compte_id",
+                        "in": "query",
+                        "description": "ID du compte pour lequel récupérer l'historique",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filtrer par type de transaction",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "paiement",
+                                "transfert",
+                                "depot",
+                                "virement"
+                            ],
+                            "example": "paiement"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Numéro de page pour la pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Liste des transactions",
+                        "description": "Liste des transactions paginées",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Transaction"
-                                    }
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Transaction"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "per_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Données invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "L'ID du compte est requis"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Accès non autorisé à ce compte"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -499,18 +1129,29 @@
                 ]
             }
         },
-        "/api/v1/transactions/{id}": {
+        "/api/v1/transactions/{reference}": {
             "get": {
                 "tags": [
                     "Transactions"
                 ],
-                "summary": "Afficher les détails d'une transaction par son ID",
-                "operationId": "c9e072c8c645241005e971a691e8338e",
+                "summary": "Afficher les détails d'une transaction par sa référence",
+                "description": "Récupère les détails d'une transaction en utilisant sa référence unique",
+                "operationId": "99859311bba44ea2ca74f629e3099c80",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "reference",
                         "in": "path",
-                        "description": "ID de la transaction",
+                        "description": "Référence unique de la transaction",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "PAY123456789"
+                        }
+                    },
+                    {
+                        "name": "compte_id",
+                        "in": "query",
+                        "description": "ID du compte associé à la transaction",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -524,19 +1165,95 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Transaction"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Transaction"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Données invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "L'ID du compte est requis"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "404": {
-                        "description": "Transaction non trouvée"
+                        "description": "Transaction non trouvée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaction non trouvée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Non autorisé"
+                        "description": "Non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "403": {
-                        "description": "Accès non autorisé"
+                        "description": "Accès non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Accès non autorisé à cette transaction"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -589,79 +1306,6 @@
                         "type": "number",
                         "format": "float",
                         "example": 10000
-                    }
-                },
-                "type": "object"
-            },
-            "Client": {
-                "title": "Client",
-                "description": "Modèle de client",
-                "properties": {
-                    "id": {
-                        "description": "ID unique du client",
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "user_id": {
-                        "description": "ID de l'utilisateur associé",
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "prenom": {
-                        "description": "Prénom du client",
-                        "type": "string"
-                    },
-                    "nom": {
-                        "description": "Nom du client",
-                        "type": "string"
-                    },
-                    "adresse": {
-                        "description": "Adresse du client",
-                        "type": "string"
-                    },
-                    "ville": {
-                        "description": "Ville du client",
-                        "type": "string"
-                    },
-                    "pays": {
-                        "description": "Pays du client",
-                        "type": "string"
-                    },
-                    "telephone": {
-                        "description": "Numéro de téléphone du client",
-                        "type": "string"
-                    },
-                    "piece_identite": {
-                        "description": "Numéro de pièce d'identité",
-                        "type": "string"
-                    },
-                    "type_piece": {
-                        "description": "Type de pièce d'identité (CNI, Passeport, etc.)",
-                        "type": "string"
-                    },
-                    "date_emission": {
-                        "description": "Date d'émission de la pièce d'identité",
-                        "type": "string",
-                        "format": "date"
-                    },
-                    "date_expiration": {
-                        "description": "Date d'expiration de la pièce d'identité",
-                        "type": "string",
-                        "format": "date"
-                    },
-                    "statut": {
-                        "description": "Statut du client (actif, inactif, suspendu)",
-                        "type": "string"
-                    },
-                    "created_at": {
-                        "description": "Date de création",
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "description": "Date de dernière mise à jour",
-                        "type": "string",
-                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -843,7 +1487,7 @@
         },
         {
             "name": "Authentification",
-            "description": "Endpoints pour l'authentification"
+            "description": "Endpoints pour l'authentification des utilisateurs"
         },
         {
             "name": "Comptes",

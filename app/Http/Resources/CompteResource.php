@@ -20,7 +20,6 @@ class CompteResource extends JsonResource
             'solde' => $this->solde,
             'devise' => $this->devise,
             'statut' => $this->statut,
-            'date_ouverture' => $this->date_ouverture->format('Y-m-d H:i:s'),
             'client_id' => $this->client_id,
         ];
     }

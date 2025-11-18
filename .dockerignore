@@ -1,0 +1,72 @@
+# Documentation
+*.md
+DEPLOYMENT.md
+README.md
+
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+
+# OS
+.DS_Store
+Thumbs.db
+
+
+# Environment files
+.env
+.env.local
+.env.backup
+.env.example
+
+
+# Dependencies
+node_modules
+vendor
+
+
+# Logs
+storage/logs/*.log
+*.log
+
+
+# Testing
+.phpunit.result.cache
+tests
+phpunit.xml
+
+
+# Development
+.editorconfig
+.php_cs
+.php_cs.dist
+webpack.mix.js
+package.json
+yarn.lock
+
+
+# Cache
+bootstrap/cache/*.php
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+
+# Temp files
+*.tmp
+*.temp
+
+
+# Docker files (avoid recursion)
+Dockerfile*
+docker-compose*.yml

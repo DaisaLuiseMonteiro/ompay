@@ -3,74 +3,57 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Passport\HasApiTokens;
+use Illuminate\Support\Str;
+use App\Models\Compte;
 
-/**
- * @OA\Schema(
- *     schema="Client",
- *     type="object",
- *     title="Client",
- *     description="Modèle de client",
- *     @OA\Property(property="id", type="string", format="uuid", description="ID unique du client"),
- *     @OA\Property(property="user_id", type="string", format="uuid", description="ID de l'utilisateur associé"),
- *     @OA\Property(property="prenom", type="string", description="Prénom du client"),
- *     @OA\Property(property="nom", type="string", description="Nom du client"),
- *     @OA\Property(property="adresse", type="string", description="Adresse du client"),
- *     @OA\Property(property="ville", type="string", description="Ville du client"),
- *     @OA\Property(property="pays", type="string", description="Pays du client"),
- *     @OA\Property(property="telephone", type="string", description="Numéro de téléphone du client"),
- *     @OA\Property(property="piece_identite", type="string", description="Numéro de pièce d'identité"),
- *     @OA\Property(property="type_piece", type="string", description="Type de pièce d'identité (CNI, Passeport, etc.)"),
- *     @OA\Property(property="date_emission", type="string", format="date", description="Date d'émission de la pièce d'identité"),
- *     @OA\Property(property="date_expiration", type="string", format="date", description="Date d'expiration de la pièce d'identité"),
- *     @OA\Property(property="statut", type="string", description="Statut du client (actif, inactif, suspendu)"),
- *     @OA\Property(property="created_at", type="string", format="date-time", description="Date de création"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", description="Date de dernière mise à jour")
- * )
- */
-class Client extends Model
+class Client extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
 
     public $incrementing = false;
     protected $keyType = 'string';
 
+    /**
+     * Relation avec le compte du client
+     */
+    public function compte()
+    {
+        return $this->hasOne(Compte::class, 'client_id');
+    }
+
     protected $fillable = [
-       'id',
-    'prenom',
-    'nom',
-    'date_naissance',
-    'adresse',
-    'telephone',
-    'cni',
-    'code_secret',
-    'statut',
-    'sexe',
-    'email'
+        'id',
+        'prenom',
+        'nom',
+        'email',
+        'telephone',
+        'otp_code',
+        'otp_expires_at',
+        'otp_type',
+        'code_secret',
+        'cni',
+        'date_naissance',
+        'adresse',
+        'statut',
+        'sexe',
+        'email_verified_at',
+        'remember_token'
+    ];
+
+    protected $hidden = [
+        'otp_code',
+        'otp_expires_at',
+        'remember_token'
     ];
 
     protected $casts = [
-        'id' => 'string',
-        'date_emission' => 'date',
-        'date_expiration' => 'date'
+        'email_verified_at' => 'datetime',
+        'otp_expires_at' => 'datetime',
+        'otp_verified_at' => 'datetime'
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function compte(): HasOne
-    {
-        return $this->hasOne(Compte::class);
-    }
-
-    public function transactions(): HasMany
-    {
-        return $this->hasMany(Transaction::class, 'client_id');
-    }
 
     protected static function boot()
     {
@@ -80,6 +63,73 @@ class Client extends Model
             if (empty($model->{$model->getKeyName()})) {
                 $model->{$model->getKeyName()} = (string) \Illuminate\Support\Str::uuid();
             }
+            $model->statut = $model->statut ?? 'actif';
         });
+    }
+
+    /**
+     * Génère un nouveau code OTP pour le client
+     */
+    public function generateNewOtp($type = 'sms')
+    {
+        $this->otp_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $this->otp_expires_at = now()->addMinutes(30); // Augmenté à 30 minutes
+        $this->otp_type = $type;
+        $this->save();
+
+        return $this->otp_code;
+    }
+
+    /**
+     * Vérifie si le code OTP fourni est valide
+     */
+    public function isValidOtp($code)
+    {
+        return $this->otp_code === $code && 
+               $this->otp_expires_at && 
+               $this->otp_expires_at->isFuture();
+    }
+
+    /**
+     * Invalide le code OTP actuel
+     */
+    public function invalidateOtp()
+    {
+        $this->otp_code = null;
+        $this->otp_expires_at = null;
+        $this->otp_type = null;
+        $this->save();
+    }
+
+  public function routeNotificationForTwilio($notification)
+{
+    $originalNumber = $this->telephone;
+    $phoneNumber = preg_replace('/[^0-9]/', '', $originalNumber);
+    
+    \Log::info('Formatage du numéro', [
+        'original' => $originalNumber,
+        'nettoyé' => $phoneNumber
+    ]);
+    
+    if (str_starts_with($phoneNumber, '0')) {
+        $phoneNumber = '+221' . substr($phoneNumber, 1);
+    }
+    elseif (str_starts_with($phoneNumber, '221')) {
+        $phoneNumber = '+' . $phoneNumber;
+    }
+    elseif (!str_starts_with($phoneNumber, '+')) {
+        $phoneNumber = '+221' . $phoneNumber;
+    }
+    
+    \Log::info('Numéro formaté pour Twilio', [
+        'final' => $phoneNumber
+    ]);
+    
+    return $phoneNumber;
+}
+
+    public function routeNotificationForMail($notification)
+    {
+        return $this->email;
     }
 }

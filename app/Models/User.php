@@ -2,86 +2,48 @@
 
 namespace App\Models;
 
-use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Passport\HasApiTokens;
 
-class User extends Model implements JWTSubject
+class User extends Authenticatable
 {
-    use HasFactory, SoftDeletes;
-
-    public $incrementing = false;
-    protected $keyType = 'string';
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'name',
+        'id',
+        'prenom',
+        'nom',
         'email',
-        'password',
         'telephone',
-        'code_pin',
-        'statut'
+        'otp_code',
+        'otp_expires_at',
+        'otp_type',
+        'code_secret',
+        'cni',
+        'date_naissance',
+        'adresse',
+        'statut',
+        'sexe',
+        'email_verified_at',
+        'remember_token',
+        'refresh_token',
+        'refresh_token_expires_at'
     ];
 
     protected $hidden = [
         'password',
-        'code_pin',
         'remember_token',
+    ];
+
+    protected $dates = [
+        'refresh_token_expires_at'
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'code_pin_verified_at' => 'datetime',
-        'password' => 'hashed',
     ];
-
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    public function getJWTCustomClaims()
-    {
-        return [];
-    }
-
-    public function setPasswordAttribute($value)
-    {
-        $this->attributes['password'] = Hash::make($value);
-    }
-
-    public function setCodePinAttribute($value)
-    {
-        $this->attributes['code_pin'] = Hash::make($value);
-    }
-
-    public function compte()
-    {
-        return $this->hasOne(Compte::class);
-    }
-
-    public function transactions()
-    {
-        return $this->hasMany(Transaction::class);
-    }
-
-    public function isAdmin()
-    {
-        return $this->role === 'admin';
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     public function isActive()
     {
