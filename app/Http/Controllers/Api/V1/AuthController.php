@@ -12,12 +12,17 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Annotations as OA;
 
+
+
 /**
  * @OA\Tag(
  *     name="Authentification",
  *     description="Endpoints pour l'authentification des utilisateurs"
  * )
- */
+ *
+
+*/
+
 class AuthController extends BaseController
 {
     /**

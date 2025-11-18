@@ -1482,12 +1482,12 @@
     ],
     "tags": [
         {
-            "name": "Transactions",
-            "description": "Opérations liées aux transactions"
-        },
-        {
             "name": "Authentification",
             "description": "Endpoints pour l'authentification des utilisateurs"
+        },
+        {
+            "name": "Transactions",
+            "description": "Opérations liées aux transactions"
         },
         {
             "name": "Comptes",
