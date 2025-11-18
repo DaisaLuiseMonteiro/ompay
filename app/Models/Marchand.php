@@ -26,8 +26,19 @@ class Marchand extends Model
         'statut' => 'boolean',
     ];
 
+    /**
+     * Obtenir les transactions associées au marchand
+     */
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+    
+    /**
+     * Obtenir le compte associé au marchand
+     */
+    public function compte()
+    {
+        return $this->hasOne(Compte::class, 'client_id');
     }
 }

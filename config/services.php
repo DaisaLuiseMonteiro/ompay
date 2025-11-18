@@ -30,5 +30,18 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'auth_token' => env('TWILIO_AUTH_TOKEN'),
+        'number' => env('TWILIO_NUMBER'),
+        'enabled' => env('TWILIO_ENABLED', true),
+    ],
+
+    'passport' => [
+        'password_grant_client' => [
+            'id' => env('PASSPORT_PASSWORD_GRANT_CLIENT_ID'),
+            'secret' => env('PASSPORT_PASSWORD_GRANT_CLIENT_SECRET'),
+        ],
+    ],
 
 ];

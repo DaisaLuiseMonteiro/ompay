@@ -34,7 +34,7 @@ class SampleDataSeeder extends Seeder
             Transaction::create([
                 'id' => (string) \Illuminate\Support\Str::uuid(),
                 'reference' => 'PAY' . time() . $index,
-                'type_transaction' => 'paiement',
+                'type' => 'paiement',
                 'montant' => rand(1000, 10000) / 100, // 10.00 à 100.00 XOF
                 'frais' => 50.00, // Frais fixes de 50 XOF
                 'devise' => 'XOF',
@@ -57,7 +57,7 @@ class SampleDataSeeder extends Seeder
             Transaction::create([
                 'id' => (string) \Illuminate\Support\Str::uuid(),
                 'reference' => 'VIR' . time() . $i,
-                'type_transaction' => 'virement',
+                'type' => 'virement',
                 'montant' => $montant,
                 'frais' => 25.00, 
                 'devise' => 'XOF',

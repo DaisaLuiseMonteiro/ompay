@@ -22,6 +22,7 @@ class MarchandSeeder extends Seeder
                 'code_marchand' => 'M' . date('Ymd') . '01',
                 'nom_commerce' => 'Boutique Fashion',
                 'statut' => 'actif',
+                'solde' => 0, // Solde initialisé à 0
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -33,6 +34,7 @@ class MarchandSeeder extends Seeder
                 'code_marchand' => 'M' . date('Ymd') . '02',
                 'nom_commerce' => 'Restaurant Le Bon Goût',
                 'statut' => 'actif',
+                'solde' => 0, // Solde initialisé à 0
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -44,6 +46,7 @@ class MarchandSeeder extends Seeder
                 'code_marchand' => 'M' . date('Ymd') . '03',
                 'nom_commerce' => 'Super Marché Express',
                 'statut' => 'actif',
+                'solde' => 0, // Solde initialisé à 0
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
