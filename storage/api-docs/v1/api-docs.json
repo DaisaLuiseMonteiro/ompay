@@ -15,8 +15,12 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8000",
-            "description": "API OMPay Server"
+            "url": "http://localhost:8000/api",
+            "description": "Local Development"
+        },
+        {
+            "url": "https://om-pay-api-f7sy.onrender.com/api",
+            "description": "Production Server"
         },
         {
             "url": "/api"

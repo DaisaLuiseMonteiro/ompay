@@ -5,14 +5,32 @@ return [
     'documentations' => [
         'default' => [
             'api' => [
-                'title' => 'L5 Swagger UI',
+                'title' => 'OMPay API',
+                'version' => '1.0.0',
+                'description' => 'Documentation de l\'API OMPay',
+                'servers' => [
+                    [
+                        'url' => 'https://om-pay-api-f7sy.onrender.com',
+                        'description' => 'Production Server (Render)',
+                    ],
+                    [
+                        'url' => 'http://localhost:8000',
+                        'description' => 'Local Development Server',
+                    ]
+                ],
             ],
 
             'routes' => [
-                /*
-                 * Route for accessing api documentation interface
-                 */
                 'api' => 'api/documentation',
+                'docs' => 'docs',
+                'oauth2_callback' => 'api/oauth2-callback',
+                'middleware' => [
+                    'api' => [],
+                    'asset' => [],
+                    'docs' => [],
+                    'oauth2_callback' => [],
+                ],
+                'group_optimization' => false,
             ],
             'paths' => [
                 /*
@@ -28,7 +46,7 @@ return [
                 /*
                  * File name of the generated json documentation file
                  */
-                'docs_json' => 'api-docs.json',
+                'docs_json' => 'v1/api-docs.json',
 
                 /*
                  * File name of the generated YAML documentation file

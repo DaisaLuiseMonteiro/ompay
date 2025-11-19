@@ -5,14 +5,17 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\CompteController;
-use App\Http\Controllers\Api\V1\ClientController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 */
-// Version 1 de l'API
+
+// Documentation Swagger
+Route::get('/documentation', '\L5Swagger\Http\Controllers\SwaggerController@api')->name('api.documentation');
+
+// Groupe de version v1
 Route::prefix('v1')->group(function () {
     // Authentification
     Route::prefix('auth')->group(function () {
@@ -25,10 +28,7 @@ Route::prefix('v1')->group(function () {
     // Routes publiques
     Route::post('/comptes', [CompteController::class, 'creerCompte']);
 
-    // Documentation Swagger
-    Route::get('/documentation', '\L5Swagger\Http\Controllers\SwaggerController@api')->name('api.documentation');
-
-    // Routes protégées par authentification Passport
+    // Routes protégées par authentification
     Route::middleware(['auth:api', 'check.token'])->group(function () {
         // Transactions
         Route::prefix('transactions')->group(function () {

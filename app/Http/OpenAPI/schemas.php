@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     )
  * )
  * @OA\Server(
- *     url=L5_SWAGGER_CONST_HOST,
+ *     url="/api",
  *     description="Serveur API OMPay"
  * )
  * @OA\SecurityScheme(

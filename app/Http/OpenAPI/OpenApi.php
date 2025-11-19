@@ -16,7 +16,8 @@ use OpenApi\Attributes as OA;
         license: new OA\License(name: 'Propriétaire', url: 'https://ompay.com/license')
     ),
     servers: [
-        new OA\Server(url: 'http://localhost:8000', description: 'API OMPay Server')
+        new OA\Server(url: 'http://localhost:8000/api', description: 'Local Development'),
+        new OA\Server(url: 'https://om-pay-api-f7sy.onrender.com/api', description: 'Production Server')
     ],
     security: [['bearerAuth' => []]]
 )]
