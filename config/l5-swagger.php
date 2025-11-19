@@ -8,16 +8,6 @@ return [
                 'title' => 'OMPay API',
                 'version' => '1.0.0',
                 'description' => 'Documentation de l\'API OMPay',
-                'servers' => [
-                    [
-                        'url' => 'https://om-pay-api-f7sy.onrender.com',
-                        'description' => 'Production Server (Render)',
-                    ],
-                    [
-                        'url' => 'http://localhost:8000',
-                        'description' => 'Local Development Server',
-                    ]
-                ],
             ],
 
             'routes' => [
