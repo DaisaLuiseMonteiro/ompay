@@ -23,7 +23,7 @@
             "description": "Production Server"
         },
         {
-            "url": "/api"
+            "url": ""
         }
     ],
     "paths": {
