@@ -17,10 +17,6 @@ use OpenApi\Annotations as OA;
  *         url="https://ompay.com/terms"
  *     )
  * )
- * @OA\Server(
- *     url="/api",
- *     description="Serveur API OMPay"
- * )
  * @OA\SecurityScheme(
  *     type="http",
  *     description="Authentification par JWT",
